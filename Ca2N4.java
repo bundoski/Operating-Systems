@@ -18,7 +18,7 @@ public class Ca2N4 {
     @Override
     public void execute() throws InterruptedException{
 
-        caHere.acquire();
+        caHere.acquire(1);
 
         lock.lock();
         totalAtoms++;
@@ -28,7 +28,7 @@ public class Ca2N4 {
         }
         lock.unlock();
 
-        canBond.acquire();
+        canBond.acquire(1);
         state.bond();
         // empty
 
