@@ -6,7 +6,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Ca2N4 {
 
-    private static Semaphore caHere = new Semaphore(0);
+    private static Semaphore caHere = new Semaphore(0);  // ili 0 ili 2..
     private static Semaphore nHere = new Semaphore(4);
     private static Semaphore canBond = new Semaphore(0);
     private static Semaphore canExit = new Semaphore(0);
