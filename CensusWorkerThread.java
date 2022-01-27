@@ -1,5 +1,3 @@
-package Networking.tcp.censusIspitna.server;
-
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -36,35 +34,30 @@ public class CensusWorkerThread extends Thread {
             dos.flush();
             // send data as MAIL FROM:<emailFrom> ...
             String mailFrom = dis.readUTF(); // na ovaj nacin cekame string sho kliento bi ni go pratil..
-            try {
-                if (mailFrom.contains("@")) {
-                    dos.writeUTF("250");
-                }
-            } catch (IOException e){
-                System.out.println("That is not an email..");
-            }
+            if(mailFrom.contains("@"))
+                dos.writeUTF("250");
+            else
+                throw new IOException();
             System.out.printf("MAIL FROM: %s", mailFrom);
             System.out.println();
 
             // write MAIL TO:<emailTo> message.
             String mailTo = dis.readUTF();
-            try{
-                if(mailTo.contains("@")){
-                    dos.writeUTF("THANK YOU");
-                }
-            } catch (IOException e){
-                System.out.println("That is not an email..");
+            if(mailTo.contains("@")){
+                dos.writeUTF("THANK YOU");
             }
+            else
+                throw new IOException();
             System.out.printf("MAIL TO: %s", mailTo);
             System.out.println();
+
             String subject = dis.readUTF();
-            try{
-                if(subject.length()<=200){
-                    dos.writeUTF("OK");
-                }
-            } catch (IOException e){
-                System.out.println("Subject is longer than 200 characters");
+            if(subject.length()<=200){
+                dos.writeUTF("OK");
             }
+            else
+                throw new IOException();
+
             System.out.printf("SUBJECT: %s", subject);
             String totaldata = mailFrom + " " + mailTo + " " + subject;
             dos.writeUTF("RECEIVED: " + totaldata.length());
