@@ -1,5 +1,3 @@
-package Networking.tcp.censusIspitna.server;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -57,17 +55,18 @@ public class CensusServer extends Thread implements CensusWriter {
     // i tuka morame da implementirame nekakva sinhronizacija.
     // samo klavame synchronized posle public deklaracijata..
     // isto mozi i so synchronized(this) { ovde kodo so treba da se izvrsi }
-   public  void addRecordToFile(String indeks, String nameSurname){  // ZA ZAPISUVANJE KON NEKOJ FAJL. gore pram private PrintWriter fileWriter;
+    public  void addRecordToFile(String mailFrom, String mailTo,String Data ){  // ZA ZAPISUVANJE KON NEKOJ FAJL. gore pram private PrintWriter fileWriter;
         // zapisuvame podatoci vo format 111111 ime prezime 00:00:00
-       synchronized (this) {
-           fileWriter.append(String.format("%s:%s:%s", indeks, nameSurname, LocalDateTime.now().format(DateTimeFormatter.ISO_TIME)));
-           fileWriter.flush();
-       }
+        synchronized (this) {
+            fileWriter.append(String.format("Mail from: %s\nMail to: %s\nSubject:%s" , mailFrom, mailTo, Data));
+            // fileWriter.append(String.format("%s:%s:%s", mailFrom, mailTo, LocalDateTime.now().format(DateTimeFormatter.ISO_TIME)));
+            fileWriter.flush();
+        }
     }
 
     public static void main(String[] args) throws FileNotFoundException {
 
-        CensusServer server = new CensusServer(9999, "census.txt");
+        CensusServer server = new CensusServer(5432, "census.txt");
         server.start();
     }
 }
