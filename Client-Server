@@ -1,0 +1,154 @@
+/*
+Клиентите рекурзивно ги изминуваат сите документи во даден именик и неговото поддрво и  ги пребаруваат сите .txt или .dat документи кои се помали од 512KB. Од сите откриени датотеки кои го исполнуваат условот, клиентот креира files.csv фајл во директориумот кој се предава како аргумент на конструкторот на клиентот folderTxtOutput, со што во секоја редица запишува апсолутна патека и големина на фајлот одделени со запирка. Потоа големината во бајти, датумот на последна промена (како податок од Long тип) на креираниот фајл files.csv, клиентите треба да ја пратат до серверот.
+ 
+Серверот кога ќе прими порака од одреден клиент, пораката ја запишува во датотеката clients_data.txt која постои локално кај него. Секоја информација од секој клиент се чува во нова линија во истиот документ, во следниот формат:
+<IP-address-of-the-client> <port-of-the-client> <total-size-of-txt-file> <date-of-last-modification-in-long-format>
+ 
+Потребно е да овозможите праќање на податоци од повеќе клиенти едновремено.
+ 
+Серверот слуша на порта 3398. Редоследот на праќање на податоците од клиентите не е важен.
+ 
+Пример
+ 
+Изгледот на една линија од текстуалната датотека files.csv, која секој клиент треба да ја креира, треба да изгледа вака: D:\Data\primer.txt,2487
+ 
+Изгледот на енда линија од текстуалната датотека clients_data.txt кај серверот, по успешна комуникација, треба да изгледа вака: 127.0.0.1 54665 112 1561906170748
+ 
+*/
+import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+ 
+public class JavaIOStarter {
+    
+    static BufferedWriter writer = null;
+    
+ 
+    public static void main(String[] args) throws IOException {
+        // TODO Auto-generated method stub
+        
+        Server server = new Server();
+        server.start();
+        
+        Client client1 = new Client("izvorD", "New Folder");
+        client1.start();
+        
+ 
+    }
+    
+    static class Client extends Thread{
+        File file;
+        File folder;
+        BufferedWriter writer = null;
+        
+        Client(String sourceFolder, String folderTxtOutput) throws IOException{
+            this.folder=new File(sourceFolder);
+            file = new File(folderTxtOutput + "/files.txt");
+            this.writer = new BufferedWriter(new FileWriter(file));
+        }
+        
+        @Override
+        public void run() {
+            try {
+                Socket socket = new Socket("localhost", 3398);
+                DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
+                
+            }catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+        
+        //REKURZIJA
+        public void recursion(File source) throws IOException {
+            for(File f : source.listFiles()) {
+                if(f.isFile()) {
+                    if(f.getName().endsWith(".txt") || f.getName().endsWith(".dat")) {
+                        if(f.length()< 512 * 8000) {
+                            toDestination(f);
+                        }
+                    }
+                    
+                }else if(f.isDirectory()) {
+                    recursion(f);
+                }
+            }
+        }
+        
+        public void toDestination(File f) throws IOException {
+            String fileName = null;
+            long lenght = 0;
+            String path = null;
+            
+            
+            try {
+                fileName = f.getName();
+                lenght = f.length();
+                path = f.getAbsolutePath();
+                
+                writer = new BufferedWriter(new FileWriter(file,true));
+                
+                writer.write(fileName + " " + lenght + " " + path+ "\n");
+                
+            }catch(Exception e) {
+                e.printStackTrace();
+            }finally {
+                if(writer!=null) {
+                    writer.close();
+                }
+            }
+            
+        }
+    }
+    
+    static class Server extends Thread{
+        ServerSocket ss;
+        
+        public Server() throws IOException {
+            ss = new ServerSocket(3398);
+        }
+        
+        public void run() {
+            try {
+                Socket client;
+                
+                while(true) {
+                    
+                    client=ss.accept();
+                    ServerWorkerThread workerThread = new ServerWorkerThread(client);
+                    workerThread.start();
+                }
+                
+            }catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    static class ServerWorkerThread extends Thread{
+        private final DataInputStream reader;
+        Socket socket;
+        
+        public ServerWorkerThread(Socket client) throws IOException {
+            socket=client;
+            reader=new DataInputStream(client.getInputStream());
+        }
+        
+        public void run() {
+            
+            
+            try {
+                //zapisuvanje
+                writer = new BufferedWriter(new FileWriter("clients_data.txt",true));
+                writer.write(socket.getInetAddress().toString() + " " + socket.getLocalPort() +"\n");
+                
+            }catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
